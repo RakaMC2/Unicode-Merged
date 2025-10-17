@@ -97,15 +97,7 @@
             font-size: 1em;
         }
         
-        input[type="file"]::file-selector-button {
-            background-color: var(--primary-color);
-            color: #000;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-right: 10px;
-        }
+        input[type="file"]::file-selector-button { background-color: var(--primary-color); color: #000; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; margin-right: 10px; }
 
         .radio-group label, .checkbox-group label {
             margin-bottom: 0;
@@ -151,47 +143,10 @@
             background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 20px 20px;
         }
         
-        .icon-entry{display:flex;align-items:center;padding:12px 8px;border-bottom:1px solid var(--border-color);gap:15px}
-        .icon-entry:last-child{border-bottom:none}
-        canvas.preview-canvas{border:1px dashed #555;flex-shrink:0;image-rendering:pixelated}
-        .char-info{font-size:1.5em;font-weight:700;color:var(--primary-color)}
-        .code-info{font-family:'Courier New',Courier,monospace;background-color:#333;color:#ccc;padding:3px 8px;border-radius:4px;font-size:.8em}
-        .copy-btn{background-color:var(--success-color);color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:700;margin-left:auto;transition:background-color .2s}
-        .copy-btn:hover{background-color:var(--success-hover-color)}
-        #json-result-container{margin-top:20px;background-color:#0d1117;color:#c9d1d9;padding:15px;border-radius:6px;border:1px solid var(--border-color);position:relative}
-        #json-result{white-space:pre-wrap;word-break:break-all;font-family:'SF Mono','Courier New',monospace}
-        #copy-all-btn{position:absolute;top:10px;right:10px}
-
-        /* === ANIMASI WARNA DAN TOGGLE TEMA === */
-        @keyframes hueShift {
-            0% { filter: hue-rotate(0deg); }
-            100% { filter: hue-rotate(360deg); }
-        }
-        .color-animate {
-            animation: hueShift 10s linear infinite;
-        }
-        .theme-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 8px 14px;
-            background-color: var(--accent-color);
-            border: none;
-            border-radius: 8px;
-            color: white;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.2s;
-            z-index: 1000;
-        }
-        .theme-toggle:hover {
-            background-color: var(--accent-hover-color);
-        }
+        .icon-entry{display:flex;align-items:center;padding:12px 8px;border-bottom:1px solid var(--border-color);gap:15px}.icon-entry:last-child{border-bottom:none}canvas.preview-canvas{border:1px dashed #555;flex-shrink:0;image-rendering:pixelated}.char-info{font-size:1.5em;font-weight:700;color:var(--primary-color)}.code-info{font-family:'Courier New',Courier,monospace;background-color:#333;color:#ccc;padding:3px 8px;border-radius:4px;font-size:.8em}.copy-btn{background-color:var(--success-color);color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:700;margin-left:auto;transition:background-color .2s}.copy-btn:hover{background-color:var(--success-hover-color)}#json-result-container{margin-top:20px;background-color:#0d1117;color:#c9d1d9;padding:15px;border-radius:6px;border:1px solid var(--border-color);position:relative}#json-result{white-space:pre-wrap;word-break:break-all;font-family:'SF Mono','Courier New',monospace}#copy-all-btn{position:absolute;top:10px;right:10px}
     </style>
 </head>
 <body>
-
-<button id="themeToggle" class="theme-toggle">🌙 Mode Gelap</button>
 
 <div id="container">
     <h1>🖼️ Image Merger & Icon Extractor</h1>
@@ -264,43 +219,267 @@
 </div>
 
 <script>
-    // Tombol tab
     function openTab(evt, tabName){let i,tabcontent,tablinks;tabcontent=document.getElementsByClassName("tab-content");for(i=0;i<tabcontent.length;i++){tabcontent[i].style.display="none"}tablinks=document.getElementsByClassName("tab-button");for(i=0;i<tablinks.length;i++){tablinks[i].className=tablinks[i].className.replace(" active","")}document.getElementById(tabName).style.display="block";evt.currentTarget.className+=" active"}
 
-    /* === TOGGLE MODE TERANG/GELAP === */
-    const themeToggle = document.getElementById('themeToggle');
-    let isDarkMode = true;
-    function setTheme(dark) {
-        const root = document.documentElement;
-        if (dark) {
-            root.style.setProperty('--bg-color', '#121212');
-            root.style.setProperty('--surface-color', '#1e1e1e');
-            root.style.setProperty('--primary-text-color', '#e0e0e0');
-            root.style.setProperty('--secondary-text-color', '#a0a0a0');
-            root.style.setProperty('--border-color', '#444');
-            themeToggle.textContent = '🌙 Mode Gelap';
-        } else {
-            root.style.setProperty('--bg-color', '#f2f2f2');
-            root.style.setProperty('--surface-color', '#ffffff');
-            root.style.setProperty('--primary-text-color', '#222');
-            root.style.setProperty('--secondary-text-color', '#555');
-            root.style.setProperty('--border-color', '#ccc');
-            themeToggle.textContent = '☀️ Mode Terang';
-        }
-    }
-    themeToggle.addEventListener('click', () => {isDarkMode=!isDarkMode;setTheme(isDarkMode);});
+    // --- Merger Logic ---
+    const imageMergerLoader = document.getElementById('imageMergerLoader');
+    const numColsInput = document.getElementById('numCols');
+    const numRowsInput = document.getElementById('numRows');
+    const sizeModeRadios = document.querySelectorAll('input[name="sizeMode"]');
+    const manualSizeInputs = document.getElementById('manual-size-inputs');
+    const manualWidthInput = document.getElementById('manualWidth');
+    const manualHeightInput = document.getElementById('manualHeight');
+    const preserveAspectRatioCheckbox = document.getElementById('preserveAspectRatio');
+    const mergeBtn = document.getElementById('mergeBtn');
+    const mergerOutput = document.getElementById('merger-output');
 
-    // Aktifkan animasi warna
-    document.addEventListener('DOMContentLoaded', () => {
-        const title = document.querySelector('h1');
-        const buttons = document.querySelectorAll('.action-button');
-        title.classList.add('color-animate');
-        buttons.forEach(btn => btn.classList.add('color-animate'));
+    sizeModeRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            manualSizeInputs.style.display = document.getElementById('sizeModeManual').checked ? 'grid' : 'none';
+        });
     });
 
-    /* === SCRIPT ASLI DIBIARKAN TANPA PERUBAHAN === */
-    // (seluruh fungsi merger dan extractor tetap seperti sebelumnya)
+    mergeBtn.addEventListener('click', async () => {
+        const files = imageMergerLoader.files;
+        const numCols = parseInt(numColsInput.value);
+        const numRows = parseInt(numRowsInput.value);
+        const sizeMode = document.querySelector('input[name="sizeMode"]:checked').value;
+        // const preserveAspectRatio = preserveAspectRatioCheckbox.checked; // Checkbox ini tidak lagi digunakan secara langsung di logika baru, namun dibiarkan agar tidak error
+
+        if (files.length === 0) { mergerOutput.innerHTML = '<p style="color: #ffcc80;">Pilih beberapa file gambar terlebih dahulu.</p>'; return; }
+        if (isNaN(numCols) || numCols <= 0 || isNaN(numRows) || numRows <= 0) { mergerOutput.innerHTML = '<p style="color: red;">Jumlah kolom dan baris tidak valid.</p>'; return; }
+        if (files.length > numCols * numRows) { mergerOutput.innerHTML = `<p style="color: red;">Jumlah gambar (${files.length}) melebihi kapasitas grid (${numCols*numRows} sel). Tambah jumlah kolom atau baris.</p>`; return; }
+
+        mergerOutput.innerHTML = '<p>Menggabungkan gambar, mohon tunggu...</p>';
+
+        try {
+            const images = await Promise.all(Array.from(files).map(file => new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = reject;
+                img.src = URL.createObjectURL(file);
+            })));
+
+            let cellWidth, cellHeight;
+
+            if (sizeMode === 'first') {
+                cellWidth = images[0].width;
+                cellHeight = images[0].height;
+            } else if (sizeMode === 'largest') {
+                cellWidth = Math.max(...images.map(img => img.width));
+                cellHeight = Math.max(...images.map(img => img.height));
+            } else { 
+                cellWidth = parseInt(manualWidthInput.value);
+                cellHeight = parseInt(manualHeightInput.value);
+                if (isNaN(cellWidth) || isNaN(cellHeight) || cellWidth <= 0 || cellHeight <= 0) {
+                    mergerOutput.innerHTML = '<p style="color: red;">Ukuran cell manual tidak valid.</p>';
+                    return;
+                }
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = numCols * cellWidth;
+            canvas.height = numRows * cellHeight;
+            const ctx = canvas.getContext('2d');
+
+            images.forEach((img, index) => {
+                const col = index % numCols;
+                const row = Math.floor(index / numCols);
+                const x = col * cellWidth; // Koordinat X pojok kiri atas CELL
+                const y = row * cellHeight; // Koordinat Y pojok kiri atas CELL
+
+                // =================================================================
+                // === PERUBAHAN LOGIKA UTAMA ADA DI SINI ==========================
+                // =================================================================
+                // Logika ini menggantikan blok if/else 'preserveAspectRatio' yang lama.
+                // Tujuan:
+                // 1. TIDAK akan memperbesar gambar yang lebih kecil dari ukuran cell.
+                // 2. AKAN memperkecil gambar yang lebih besar dari ukuran cell (menjaga rasio).
+                // 3. Selalu menempatkan gambar di tengah cell.
+                
+                let drawWidth = img.width;
+                let drawHeight = img.height;
+
+                // Hanya lakukan penyesuaian ukuran JIKA gambar lebih besar dari cell.
+                if (drawWidth > cellWidth || drawHeight > cellHeight) {
+                    const imgAspectRatio = img.width / img.height;
+                    const cellAspectRatio = cellWidth / cellHeight;
+
+                    if (imgAspectRatio > cellAspectRatio) {
+                        // Jika gambar lebih 'lebar' (proporsional) dibanding cell
+                        drawWidth = cellWidth;
+                        drawHeight = cellWidth / imgAspectRatio;
+                    } else {
+                        // Jika gambar lebih 'tinggi' (proporsional) dibanding cell
+                        drawHeight = cellHeight;
+                        drawWidth = cellHeight * imgAspectRatio;
+                    }
+                }
+                
+                // Hitung offset agar gambar berada di tengah cell
+                const offsetX = (cellWidth - drawWidth) / 2;
+                const offsetY = (cellHeight - drawHeight) / 2;
+                
+                // Gambar ke canvas pada posisi yang telah dihitung di dalam cell
+                ctx.drawImage(img, x + offsetX, y + offsetY, drawWidth, drawHeight);
+                // =================================================================
+                // === AKHIR DARI PERUBAHAN LOGIKA =================================
+                // =================================================================
+            });
+            
+            mergerOutput.innerHTML = '<h3>Hasil Penggabungan:</h3>';
+            mergerOutput.appendChild(canvas);
+
+            const downloadLink = document.createElement('a');
+            downloadLink.href = canvas.toDataURL('image/png');
+            downloadLink.download = 'spritesheet.png';
+            downloadLink.textContent = 'Unduh Spritesheet';
+            downloadLink.className = 'action-button';
+            downloadLink.style.display = 'block';
+            downloadLink.style.textAlign = 'center';
+            downloadLink.style.marginTop = '10px';
+            mergerOutput.appendChild(downloadLink);
+
+        } catch (error) {
+            mergerOutput.innerHTML = `<p style="color: red;">Gagal memuat gambar: ${error}</p>`;
+        }
+    });
+
+    // --- Extractor Logic (Tidak berubah) ---
+
+    function copyToClipboard(textToCopy, buttonElement, originalText) {
+        const textArea = document.createElement('textarea');
+        textArea.value = textToCopy;
+        textArea.style.position = 'fixed';
+        textArea.style.top = '-9999px';
+        textArea.style.left = '-9999px';
+        document.body.appendChild(textArea);
+        textArea.select();
+        textArea.setSelectionRange(0, 99999);
+        try {
+            document.execCommand('copy');
+            buttonElement.textContent = '✅ Disalin!';
+        } catch (err) {
+            console.error('Gagal menyalin teks: ', err);
+            buttonElement.textContent = 'Gagal';
+        }
+        document.body.removeChild(textArea);
+        setTimeout(() => {
+            buttonElement.textContent = originalText;
+        }, 2000);
+    }
+
+    const imageExtractorLoader = document.getElementById("imageExtractorLoader");
+    const iconWidthInput = document.getElementById("iconWidth");
+    const iconHeightInput = document.getElementById("iconHeight");
+    const extractBtn = document.getElementById("extractBtn");
+    const extractorOutput = document.getElementById("extractor-output");
+    const jsonResultContainer = document.getElementById("json-result-container");
+    const jsonResult = document.getElementById("json-result");
+    const copyAllBtn = document.getElementById("copy-all-btn");
+
+    extractBtn.addEventListener("click", () => {
+        const file = imageExtractorLoader.files[0];
+        if (!file) {
+            extractorOutput.innerHTML = '<p style="color: #ffcc80;">Pilih file gambar terlebih dahulu.</p>';
+            return;
+        }
+
+        const filename = file.name;
+        const match = filename.match(/^glyph_([0-9a-fA-F]{2})\.png$/i);
+
+        if (!match) {
+            extractorOutput.innerHTML = '<p style="color: red; font-weight: bold;">Nama file tidak valid! Harap gunakan format <strong>glyph_XX.png</strong>, di mana XX adalah dua digit heksadesimal (contoh: glyph_E1.png).</p>';
+            return;
+        }
+
+        const iconWidth = parseInt(iconWidthInput.value);
+        const iconHeight = parseInt(iconHeightInput.value);
+        if (isNaN(iconWidth) || isNaN(iconHeight) || iconWidth <= 0 || iconHeight <= 0) {
+            extractorOutput.innerHTML = '<p style="color: red;">Ukuran ikon tidak valid.</p>';
+            return;
+        }
+
+        extractorOutput.innerHTML = "<p>Mengekstrak ikon, mohon tunggu...</p>";
+        jsonResultContainer.style.display = "none";
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const image = new Image();
+            image.onload = function () {
+                const resultsFragment = document.createDocumentFragment();
+                const cols = Math.floor(image.width / iconWidth);
+                const rows = Math.floor(image.height / iconHeight);
+                let fullString = "";
+
+                const startCodePoint = parseInt(match[1] + "00", 16);
+                let currentCodePoint = startCodePoint;
+
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        if (currentCodePoint >= startCodePoint + 256) break;
+
+                        const char = String.fromCodePoint(currentCodePoint);
+                        fullString += char;
+
+                        const entryDiv = document.createElement("div");
+                        entryDiv.className = "icon-entry";
+
+                        const previewCanvas = document.createElement("canvas");
+                        previewCanvas.className = "preview-canvas";
+                        const scale = 2;
+                        previewCanvas.width = iconWidth * scale;
+                        previewCanvas.height = iconHeight * scale;
+                        const ctx = previewCanvas.getContext("2d");
+                        ctx.imageSmoothingEnabled = false;
+                        ctx.drawImage(image, c * iconWidth, r * iconHeight, iconWidth, iconHeight, 0, 0, previewCanvas.width, previewCanvas.height);
+
+                        const charInfo = document.createElement("span");
+                        charInfo.className = "char-info";
+                        charInfo.textContent = char;
+
+                        const codeInfo = document.createElement("span");
+                        codeInfo.className = "code-info";
+                        codeInfo.textContent = `0x${currentCodePoint.toString(16).toUpperCase()}`;
+                        
+                        const copyBtn = document.createElement("button");
+                        copyBtn.className = "copy-btn";
+                        copyBtn.textContent = "Salin";
+                        
+                        copyBtn.onclick = () => {
+                            copyToClipboard(char, copyBtn, "Salin");
+                        };
+
+                        entryDiv.appendChild(previewCanvas);
+                        entryDiv.appendChild(charInfo);
+                        entryDiv.appendChild(codeInfo);
+                        entryDiv.appendChild(copyBtn);
+                        resultsFragment.appendChild(entryDiv);
+
+                        currentCodePoint++;
+                    }
+                }
+
+                extractorOutput.innerHTML = "";
+                extractorOutput.appendChild(resultsFragment);
+
+                if (fullString) {
+                    jsonResultContainer.style.display = "block";
+                    jsonResult.textContent = `"${fullString}"`;
+                } else {
+                    extractorOutput.innerHTML = "<p>Tidak ada ikon yang dapat diekstrak dengan ukuran yang diberikan.</p>";
+                }
+            };
+            image.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    copyAllBtn.addEventListener("click", () => {
+        const textToCopy = jsonResult.textContent;
+        copyToClipboard(textToCopy, copyAllBtn, "Salin Semua");
+    });
 </script>
 
 </body>
-                                                                                                                                                               </html>
+</html>
